@@ -19,7 +19,7 @@ user_edit:
     defaults:   { _controller: UserBundle:User:edit }
 
 user_view:
-    path:       /view/{username}
+    path:       /view/{id}
     defaults:   { _controller: UserBundle:User:view }
 
 user_delete:

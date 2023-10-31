@@ -28,12 +28,12 @@ class UserController extends Controller
         return new Response($res);
     }
 
-    public function viewAction($username) {
+    public function viewAction($id) {
         $repository = $this->getDoctrine()->getRepository('UserBundle:User');
 
-        // $user = $repository->find($id);
+        $user = $repository->find($id);
 
-        $user = $repository->findOneByUsername($username);
+        // $user = $repository->findOneByUsername($username);
 
         return new Response('Usuario: ' . $user->getUsername() . ' con email: ' . $user->getEmail());
     }
