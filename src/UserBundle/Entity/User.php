@@ -270,9 +270,9 @@ class User
      *
      * @return User
      */
-    public function setCreateAt($createAt)
+    public function setCreatedAt($createdAt)
     {
-        $this->createdAt = $createAt;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -282,7 +282,7 @@ class User
      *
      * @return \DateTime
      */
-    public function getCreateAt()
+    public function getCreatedAt()
     {
         return $this->createdAt;
     }
