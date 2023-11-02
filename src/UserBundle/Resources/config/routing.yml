@@ -14,6 +14,11 @@ user_add:
     path:       /add
     defaults:   { _controller: UserBundle:User:add }
 
+user_create:
+    path:       /create
+    defaults:   { _controller: UserBundle:User:create }
+    methods: POST
+
 user_edit:
     path:       /edit/{id}
     defaults:   { _controller: UserBundle:User:edit }
