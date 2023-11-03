@@ -11,10 +11,10 @@ use UserBundle\Form\UserType;
 class UserController extends Controller
 {
     /**
-     * Función que muestra todos los usuarios de nuestra aplicación
+     * Función que renderiza la vista de los usuarios
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
-     * @return Response
+     * @return Render
      */
 
     public function indexAction()
@@ -23,16 +23,15 @@ class UserController extends Controller
 
         $users = $em->getRepository('UserBundle:User')->findAll();
 
-        // $res = 'Lista de usuarios: <br />';
-
-        // foreach ($users as $user) {
-        //     $res .= 'Usuario: ' . $user->getUsername() . ' - Email: ' . $user->getEmail() . '<br />';
-        // }
-
-        // return new Response($res);
-
         return $this->render('UserBundle:User:index.html.twig', array('users' => $users));
     }
+
+    /**
+     * Función que renderiza la vista del formulario de nuevos usuarios
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * @return Render
+     */
 
     public function addAction() {
         $user = new User();
@@ -65,6 +64,7 @@ class UserController extends Controller
 
             $em = $this->getDoctrine()->getManager();
             $em->persist($user);
+            $em->flush();
 
             return $this->redirectToRoute('user_index');
         }
@@ -83,8 +83,6 @@ class UserController extends Controller
         $repository = $this->getDoctrine()->getRepository('UserBundle:User');
 
         $user = $repository->find($id);
-
-        // $user = $repository->findOneByUsername($username);
 
         return new Response('Usuario: ' . $user->getUsername() . ' con email: ' . $user->getEmail());
     }

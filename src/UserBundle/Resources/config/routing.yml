@@ -30,3 +30,10 @@ user_view:
 user_delete:
     path:       /delete/{id}
     defaults:   { _controller: UserBundle:User:delete }
+
+user_redirect_add:
+    path:       /create
+    defaults:
+        _controller: UserBundle:User:add
+        path: /add
+        permanent: true
