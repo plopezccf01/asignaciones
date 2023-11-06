@@ -143,7 +143,7 @@ class UserController extends Controller
      * Función que recupera el password del usuario
      *
      * @param $id
-     * @return void
+     * @return $currentPass
      */
     private function recoverPass($id) {
        
@@ -162,10 +162,10 @@ class UserController extends Controller
     }
 
     /**
-     * Función que muestra un usuario determinado según su ID
+     * Función que renderiza nuestra vista de los datos de un usuario
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
-     * @return Response
+     * @return render
      */
 
     public function viewAction($id) {
@@ -173,6 +173,55 @@ class UserController extends Controller
 
         $user = $repository->find($id);
 
-        return new Response('Usuario: ' . $user->getUsername() . ' con email: ' . $user->getEmail());
+        if (!$user) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        $deleteForm = $this->createDeleteForm($user);
+
+        return $this->render('UserBundle:User:view.html.twig', array('user' => $user, 'delete_form' => $deleteForm -> createView()));
+    }
+
+    /**
+     * Función que crea un formulario de eliminación de usuarios
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $user
+     * @return void
+     */
+
+    private function createDeleteForm($user) {
+        return $this->createFormBuilder()
+            ->setAction($this->generateUrl('user_delete', array('id' => $user->getId())))
+            ->setMethod('DELETE')
+            ->getForm();
+    }
+
+    /**
+     * Función que elimina a un usuario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * @param Request $request, $id
+     * @return void
+     */
+
+    public function deleteAction(Request $request, $id) {
+        $em = $this->getDoctrine()->getManager();
+        $user = $em->getRepository('UserBundle:User')->find($id);
+
+        if (!$user) {
+            throw $this->createNotFoundException('User not found');
+        }
+
+        $form = $this->createDeleteForm($user);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->remove($user);
+            $em->flush();
+
+            return $this->redirectToRoute('user_index');
+        }
     }
 }
