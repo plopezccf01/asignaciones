@@ -25,7 +25,9 @@ class UserController extends Controller
 
         $users = $em->getRepository('UserBundle:User')->findAll();
 
-        return $this->render('UserBundle:User:index.html.twig', array('users' => $users));
+        $deleteFormAjax = $this->createCustomForm(':USER_ID', 'DELETE', 'user_delete');
+
+        return $this->render('UserBundle:User:index.html.twig', array('users' => $users, 'delete_form_ajax' => $deleteFormAjax->createView()));
     }
 
     /**
@@ -223,5 +225,12 @@ class UserController extends Controller
 
             return $this->redirectToRoute('user_index');
         }
+    }
+
+    private function createCustomForm($id, $method, $route) {
+        return $this->createFormBuilder()
+            ->setAction($this->generateUrl($route, array('id' => $id)))
+            ->setMethod($method)
+            ->getForm();
     }
 }

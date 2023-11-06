@@ -23,7 +23,7 @@
                     </thead>
                     <tbody>
                         {% for user in users %}
-                            <tr>
+                            <tr data-id="{{ user.id }}">
                                 <td>{{ user.username }}</td>
                                 <td>{{ user.firstname }}</td>
                                 <td>{{ user.lastname }}</td>
@@ -49,6 +49,12 @@
             </div>
         </div>
     </div>
-</table>
 
+    {{ include('UserBundle:User:forms/form.html.twig', { form: delete_form_ajax, message : 'Are you sure?', id: 'form-delete', with_submit: false }) }}
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('bundles/user/js/delete-user.js') }}"></script>
 {% endblock %}
