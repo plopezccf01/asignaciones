@@ -5,6 +5,8 @@ namespace UserBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Form\FormError;
 use UserBundle\Entity\User;
 use UserBundle\Form\UserType;
 
@@ -57,16 +59,24 @@ class UserController extends Controller
         if ($form->isValid()) {
             $password = $form->get('password')->getData();
 
-            $encoder = $this->container->get('security.password_encoder');
-            $encoded = $encoder->encodePassword($user, $password);
+            $passwordConstraint = new Assert\NotBlank();
+            $errorList = $this->get('validator')->validate($password, $passwordConstraint);
 
-            $user->setPassword($encoded);
-
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($user);
-            $em->flush();
-
-            return $this->redirectToRoute('user_index');
+            if (count($errorList) == 0) {
+                $encoder = $this->container->get('security.password_encoder');
+                $encoded = $encoder->encodePassword($user, $password);
+    
+                $user->setPassword($encoded);
+    
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($user);
+                $em->flush();
+    
+                return $this->redirectToRoute('user_index');
+            }else {
+                $errorMessage = new FormError($errorList[0]->getMessage());
+                $form->get('password')->addError($errorMessage);
+            }
         }
 
         return $this->render('UserBundle:User:add.html.twig', array('form' => $form -> createView()));
@@ -115,6 +125,10 @@ class UserController extends Controller
             } else {
                 $recoverPass = $this->recoverPass($id);
                 $user->setPassword($recoverPass[0]['password']);
+            }
+
+            if ($form->get('role')->getData() == 'ROLE_ADMIN') {
+                $user->setIsActive(1);
             }
 
             $em->flush();
