@@ -1,44 +1,44 @@
-emm_task_index:
+task_index:
     path:     /index
-    defaults: { _controller: EMMUserBundle:Task:index }
+    defaults: { _controller: UserBundle:Task:index }
 
-emm_task_add:
+task_add:
     path:     /add
-    defaults: { _controller: EMMUserBundle:Task:add }
+    defaults: { _controller: UserBundle:Task:add }
 
-emm_task_create:
+task_create:
     path:     /create
-    defaults: { _controller: EMMUserBundle:Task:create }
+    defaults: { _controller: UserBundle:Task:create }
     methods:  POST
 
-emm_task_edit:
+task_edit:
     path:     /edit/{id}
-    defaults: { _controller: EMMUserBundle:Task:edit }
+    defaults: { _controller: UserBundle:Task:edit }
 
-emm_task_update:
+task_update:
     path:     /update/{id}
-    defaults: { _controller: EMMUserBundle:Task:update }
+    defaults: { _controller: UserBundle:Task:update }
     methods:  [POST, PUT]
 
-emm_task_view:
+task_view:
     path:     /view/{id}
-    defaults: { _controller: EMMUserBundle:Task:view }
+    defaults: { _controller: UserBundle:Task:view }
 
-emm_task_delete:
+task_delete:
     path:     /delete/{id}
-    defaults: { _controller: EMMUserBundle:Task:delete }
+    defaults: { _controller: UserBundle:Task:delete }
     methods:  [POST, DELETE]
 
-emm_task_redirect_add:
+task_redirect_add:
     path: /create
     defaults:
-        _controller: EMMUserBundle:Task:add
+        _controller: UserBundle:Task:add
         path: /add
         permanent: true 
 
-emm_task_redirect_edit:
+task_redirect_edit:
     path: /update/{id}
     defaults:
-        _controller: EMMUserBundle:Task:edit
+        _controller: UserBundle:Task:edit
         path: /edit/{id}
         permanent: true

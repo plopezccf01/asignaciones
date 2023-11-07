@@ -16,7 +16,7 @@ class UserController extends Controller
      * Función que renderiza la vista de los usuarios
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
-     * @return Render
+     * @return Response
      */
 
     public function indexAction()
@@ -34,7 +34,7 @@ class UserController extends Controller
      * Función que renderiza la vista del formulario de nuevos usuarios
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
-     * @return Render
+     * @return Response
      */
 
     public function addAction() {
@@ -167,7 +167,7 @@ class UserController extends Controller
      * Función que renderiza nuestra vista de los datos de un usuario
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
-     * @return render
+     * @return Response
      */
 
     public function viewAction($id) {
