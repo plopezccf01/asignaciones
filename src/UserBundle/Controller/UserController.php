@@ -179,25 +179,9 @@ class UserController extends Controller
             throw $this->createNotFoundException('User not found');
         }
 
-        $deleteForm = $this->createDeleteForm($user);
+        $deleteForm = $this->createCustomForm($user->getId(), 'DELETE', 'user_delete');
 
         return $this->render('UserBundle:User:view.html.twig', array('user' => $user, 'delete_form' => $deleteForm -> createView()));
-    }
-
-    /**
-     * Función que crea un formulario de eliminación de usuarios
-     * 
-     * @author Pablo López <pablo.lopez@eurotransportcar.com>
-     *
-     * @param $user
-     * @return void
-     */
-
-    private function createDeleteForm($user) {
-        return $this->createFormBuilder()
-            ->setAction($this->generateUrl('user_delete', array('id' => $user->getId())))
-            ->setMethod('DELETE')
-            ->getForm();
     }
 
     /**
@@ -216,15 +200,41 @@ class UserController extends Controller
             throw $this->createNotFoundException('User not found');
         }
 
-        $form = $this->createDeleteForm($user);
+        // $form = $this->createDeleteForm($user);
+        $form = $this->createCustomForm($user->getId(),'DELETE', 'user_delete');
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->remove($user);
-            $em->flush();
+            if ($request->isXmlHttpRequest()) {
+                $res = $this->deleteUser($user -> getRole(), $em, $user);
+
+                return new Response(
+                    json_encode(array('removed' => $res['removed'])), 200, array('Content-Type' => 'application/json')
+                );
+            }
+
+            $res = $this->deleteUser($user -> getRole(), $em, $user);
 
             return $this->redirectToRoute('user_index');
         }
+    }
+
+    private function deleteUser($role, $em, $user) {
+        if ($role == 'ROLE_USER') {
+            $em->remove($user);
+            $em->flush();
+
+            $removed = 1;
+            $alert = 'mensaje';
+        }
+
+        elseif ($role == 'ROLE_ADMIN') {
+            echo "The user could not be deleted.";
+            $removed = 0;
+            $alert = 'error';
+        }
+
+        return array('removed'=> $removed,'alert'=>$alert);
     }
 
     private function createCustomForm($id, $method, $route) {
