@@ -58,15 +58,21 @@ class TaskController extends Controller
         $form = $this->createCreateForm($task);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $task->setStatus(0);
-            $em = $this->getDoctrine()->getManager();
+        if(!$form->isSubmitted() || !$form->isValid()){
+            return $this->render('UserBundle:Task:add.html.twig', array('form' => $form->createView()));
+        }
+
+        $task->setStatus(0);
+        $em = $this->getDoctrine()->getManager();
+        
+        try {
             $em->persist($task);
             $em->flush();
-
+        } catch (\Throwable $th) {
             return $this->redirectToRoute('task_index');
         }
 
-        return $this->render('UserBundle:Task:add.html.twig', array('form' => $form->createView()));
+        return $this->redirectToRoute('task_index');
+        
     }
 }
