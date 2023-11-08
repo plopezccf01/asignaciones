@@ -101,9 +101,11 @@ class TaskController extends Controller
             throw $this->createNotFoundException('The task does not exist.');
         }
 
+        $deleteForm = $this->createCustomForm($task->getId(), 'DELETE', 'task_delete');
+
         $user = $task->getUser();
 
-        return $this->render('UserBundle:Task:view.html.twig', array('task' => $task, 'user' => $user));
+        return $this->render('UserBundle:Task:view.html.twig', array('task' => $task, 'user' => $user, 'delete_form' => $deleteForm->createView()));
     }
 
     /**
@@ -172,4 +174,41 @@ class TaskController extends Controller
 
         return $this->render('UserBundle:Task:edit.html.twig', array('task' => $task, 'form' => $form->createView()));
     }
+    
+    public function deleteAction(Request $request, $id) {
+        $em = $this->getDoctrine()->getManager();
+        $task = $em->getRepository('UserBundle:Task')->find($id);
+
+        if (!$task) {
+            throw $this->createNotFoundException('The task does not found.');
+        }
+
+        $form = $this->createCustomForm($task->getId(),'DELETE', 'user_delete');
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->remove($task);
+            $em->flush();
+
+            return $this->redirectToRoute('task_index');
+        }
+    }
+
+    /**
+     * Función que crea un formulario para eliminar la tarea
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $id
+     * @param $method
+     * @param $route
+     * @return FormBuilder
+     */
+    private function createCustomForm($id, $method, $route) {
+        return $this->createFormBuilder()
+            ->setAction($this->generateUrl($route, array('id' => $id))) //Crea la acción que va a procesar el formulario
+            ->setMethod($method) // Define el método que va a procesar el formulario
+            ->getForm(); //Procesa el formulario
+    }
+
 }
