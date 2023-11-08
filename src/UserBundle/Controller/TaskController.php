@@ -10,8 +10,19 @@ use UserBundle\Form\TaskType;
 
 class TaskController extends Controller
 {
+    /**
+     * Función que renderiza la vista de las tareas
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @return Response
+     */
     public function indexAction() {
-        exit('Lista de tareas');
+        $em = $this->getDoctrine()->getManager();
+        $dql = "SELECT t FROM UserBundle:Task t ORDER BY t.id DESC";
+        $tasks = $em->createQuery($dql)->getResult();
+
+        return $this->render('UserBundle:Task:index.html.twig', array('tasks' => $tasks));
     }
 
     /**
