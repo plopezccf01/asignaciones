@@ -10,8 +10,19 @@ use UserBundle\Form\TaskType;
 
 class TaskController extends Controller
 {
+    /**
+     * Función que renderiza la vista de las tareas
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @return Response
+     */
     public function indexAction() {
-        exit('Lista de tareas');
+        $em = $this->getDoctrine()->getManager();
+        $dql = "SELECT t FROM UserBundle:Task t ORDER BY t.id DESC";
+        $tasks = $em->createQuery($dql)->getResult();
+
+        return $this->render('UserBundle:Task:index.html.twig', array('tasks' => $tasks));
     }
 
     /**
@@ -73,6 +84,131 @@ class TaskController extends Controller
         }
 
         return $this->redirectToRoute('task_index');
-        
     }
+
+    /**
+     * Función que renderiza la vista de los datos de una tarea
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $id
+     * @return Response
+     */
+    public function viewAction($id) {
+        $task = $this->getDoctrine()->getRepository('UserBundle:Task')->find($id);
+
+        if (!$task) {
+            throw $this->createNotFoundException('The task does not exist.');
+        }
+
+        $deleteForm = $this->createCustomForm($task->getId(), 'DELETE', 'task_delete');
+
+        $user = $task->getUser();
+
+        return $this->render('UserBundle:Task:view.html.twig', array('task' => $task, 'user' => $user, 'delete_form' => $deleteForm->createView()));
+    }
+
+    /**
+     * Función que renderiza la vista de editar la tarea
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $id
+     * @return Response
+     */
+    public function editAction($id) {
+        $em = $this->getDoctrine()->getManager();
+        $task = $em->getRepository('UserBundle:Task')->find($id);
+
+        try {
+            $form = $this->createEditForm($task);
+        } catch (\Throwable $th) {
+            throw $this->createNotFoundException('The task does not found.');
+        }
+
+        return $this->render('UserBundle:Task:edit.html.twig', array('task' => $task, 'form' => $form->createView()));
+    }
+
+    /**
+     * Función que crea el formulario de editar la tarea
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param Task $entity
+     * @return $form
+     */
+    private function createEditForm(Task $entity) {
+        $form = $this->createForm(new TaskType(), $entity,
+            array('action' => $this->generateUrl('task_update', array('id' => $entity->getId())), 'method' => 'PUT')
+        );
+
+        return $form;
+    }
+
+    /**
+     * Función que procesa y edita la tarea
+     *
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
+     * @param $id
+     * @param Request $request
+     * @return RedirectResponse | Response
+     */
+    public function updateAction($id, Request $request) {
+        $em = $this->getDoctrine()->getManager();
+        $task = $em->getRepository('UserBundle:Task')->find($id);
+
+        if (!$task) {
+            throw $this->createNotFoundException('The task does not found.');
+        }
+
+        $form = $this->createEditForm($task);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $task->setStatus(0);
+            $em->flush();
+
+            return $this->redirectToRoute('task_edit', array('id' => $task->getId()));
+        }
+
+        return $this->render('UserBundle:Task:edit.html.twig', array('task' => $task, 'form' => $form->createView()));
+    }
+    
+    public function deleteAction(Request $request, $id) {
+        $em = $this->getDoctrine()->getManager();
+        $task = $em->getRepository('UserBundle:Task')->find($id);
+
+        if (!$task) {
+            throw $this->createNotFoundException('The task does not found.');
+        }
+
+        $form = $this->createCustomForm($task->getId(),'DELETE', 'user_delete');
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->remove($task);
+            $em->flush();
+
+            return $this->redirectToRoute('task_index');
+        }
+    }
+
+    /**
+     * Función que crea un formulario para eliminar la tarea
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $id
+     * @param $method
+     * @param $route
+     * @return FormBuilder
+     */
+    private function createCustomForm($id, $method, $route) {
+        return $this->createFormBuilder()
+            ->setAction($this->generateUrl($route, array('id' => $id))) //Crea la acción que va a procesar el formulario
+            ->setMethod($method) // Define el método que va a procesar el formulario
+            ->getForm(); //Procesa el formulario
+    }
+
 }
