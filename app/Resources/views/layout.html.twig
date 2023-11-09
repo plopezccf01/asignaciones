@@ -13,7 +13,9 @@
     </head>
     <body>
         {% block body %}
-            {{ include('menu.html.twig') }}
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                {{ include('menu.html.twig') }}
+            {% endif %}
         {% endblock %} 
         {% block javascripts %}
             <script 

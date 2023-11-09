@@ -12,6 +12,16 @@ use UserBundle\Form\UserType;
 
 class UserController extends Controller
 {
+
+    /**
+     * Función que renderiza a la home page
+     *
+     * @return Response
+     */
+    public function homeAction() {
+        return $this->render('UserBundle:User:home.html.twig');
+    }
+
     /**
      * Función que renderiza la vista de los usuarios
      * 

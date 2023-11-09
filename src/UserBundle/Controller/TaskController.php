@@ -26,6 +26,25 @@ class TaskController extends Controller
     }
 
     /**
+     * Función que renderiza la vista de las tareas
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @return Response
+     */
+    public function customAction(Request $request) {
+        $idUser = $this->get('security.token_storage')->getToken()->getUser()->getId();
+
+        $em = $this->getDoctrine()->getManager();
+        $dql = "SELECT t FROM UserBundle:Task t JOIN t.user u WHERE u.id = :idUser ORDER BY t.id DESC";
+        $tasks = $em->createQuery($dql)->setParameter('idUser', $idUser)->getResult();
+
+        $updateForm = $this->createCustomForm(':TASK_ID', 'PUT', 'task_process');
+
+        return $this->render('UserBundle:Task:custom.html.twig', array('tasks' => $tasks, 'updateForm' => $updateForm->createView()));
+    }
+
+    /**
      * Función que renderiza al formulario para crear una nueva tarea
      *
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
