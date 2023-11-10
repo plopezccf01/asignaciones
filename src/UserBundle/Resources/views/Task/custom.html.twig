@@ -39,7 +39,7 @@
                                         {% endif %}
                                     </td>
                                     <td class="actions">
-                                        <a href="#" class="btn btn-sm btn-success" id="button-{{ task.id }}">
+                                        <a href="#" class="btn btn-sm btn-success btn-process" id="button-{{ task.id }}">
                                             Finish
                                         </a>
                                     </td>
@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    {{ include('UserBundle:Task:forms/form.html.twig'), {form: updateForm, id: 'form-update', with_submit: false, message:null} }}
+    {{ include('UserBundle:Task:forms/form.html.twig', {form: updateForm, id: 'form-update', with_submit: false, message: null}) }}
 
 {% endblock %}
 
