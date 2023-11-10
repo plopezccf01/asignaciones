@@ -2,6 +2,8 @@
 
 namespace UserBundle\Repository;
 
+use PDO;
+
 /**
  * TaskRepository
  *
@@ -10,4 +12,16 @@ namespace UserBundle\Repository;
  */
 class TaskRepository extends \Doctrine\ORM\EntityRepository
 {
+    public function getTasks() {
+        $em = $this->getEntityManager(); // Solo para repositorio
+        $dql = "SELECT t FROM UserBundle:Task t ORDER BY t.id DESC";
+        $tasks = $em->createQuery($dql)->getResult();
+        return $tasks;
+    }
+
+    public function updateStatus($task, $status) {
+        $em = $this->getEntityManager();
+        $task->setStatus($status);
+        $em->flush();
+    }
 }

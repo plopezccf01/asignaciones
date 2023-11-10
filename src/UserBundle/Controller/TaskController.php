@@ -19,8 +19,7 @@ class TaskController extends Controller
      */
     public function indexAction() {
         $em = $this->getDoctrine()->getManager();
-        $dql = "SELECT t FROM UserBundle:Task t ORDER BY t.id DESC";
-        $tasks = $em->createQuery($dql)->getResult();
+        $tasks = $em->getRepository('UserBundle:Task')->findBy(array(), array('id' => 'DESC'));
 
         return $this->render('UserBundle:Task:index.html.twig', array('tasks' => $tasks));
     }
@@ -66,8 +65,7 @@ class TaskController extends Controller
 
         if ($form->isSubmitted() && $form->isValid()) {
             if ($task->getStatus() == 0) {
-                $task->setStatus(1);
-                $em->flush();
+                $em->getRepository('UserBundle:Task')->updateStatus($task, 1);
 
                 if ($request->isXmlHttpRequest()) {
                     return new Response(
