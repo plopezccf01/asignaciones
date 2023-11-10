@@ -15,6 +15,8 @@ class UserController extends Controller
 
     /**
      * Función que renderiza a la home page
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
      *
      * @return Response
      */
@@ -26,9 +28,9 @@ class UserController extends Controller
      * Función que renderiza la vista de los usuarios
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
      * @return Response
      */
-
     public function indexAction()
     {
         $em = $this->getDoctrine()->getManager();
@@ -44,9 +46,9 @@ class UserController extends Controller
      * Función que renderiza la vista del formulario de nuevos usuarios
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
      * @return Response
      */
-
     public function addAction() {
         $user = new User();
         $form = $this->createCreateForm($user);
@@ -54,6 +56,14 @@ class UserController extends Controller
         return $this->render('UserBundle:User:add.html.twig', array('form' => $form -> createView()));
     }
 
+    /**
+     * Función que crea el formulario de creación de un nuevo usuario
+     *
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
+     * @param User $entity
+     * @return $form
+     */
     private function createCreateForm(User $entity) {
         $form = $this->createForm(new UserType(), $entity, array(
                 'action' => $this->generateUrl('user_create'),
@@ -63,6 +73,14 @@ class UserController extends Controller
         return $form;
     }
 
+    /**
+     * Función que procesa lo que se envia dentro del formulario de creación de un nuevo usuario
+     *
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
+     * @param Request $request
+     * @return Response
+     */
     public function createAction(Request $request) {
         $user = new User();
         $form = $this->createCreateForm($user);
@@ -94,6 +112,14 @@ class UserController extends Controller
         return $this->render('UserBundle:User:add.html.twig', array('form' => $form -> createView()));
     }
 
+    /**
+     * Función que renderiza la vista de editar un usuario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $id
+     * @return Response
+     */
     public function editAction($id) {
         $em = $this->getDoctrine()->getManager();
         $user = $em->getRepository('UserBundle:User')->find($id);
@@ -107,6 +133,14 @@ class UserController extends Controller
         return $this->render('UserBundle:User:edit.html.twig', array('user' => $user, 'form' => $form->createView()));
     }
 
+    /**
+     * Función que crea el formulario de editar un usuario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param User $entity
+     * @return $form
+     */
     private function createEditForm(User $entity) {
         $form = $this->createForm(new UserType(), $entity, 
             array('action' => $this->generateUrl('user_update', array('id' => $entity->getId())), 'method' => 'PUT'));
@@ -114,7 +148,15 @@ class UserController extends Controller
         return $form;
     }
 
-    
+    /**
+     * Función que procesa y edita un usuario
+     *
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
+     * @param $id
+     * @param Request $request
+     * @return RedirectResponse | Response
+     */
     public function updateAction($id, Request $request) {
 
         $em = $this->getDoctrine()->getManager();
@@ -153,6 +195,8 @@ class UserController extends Controller
 
     /**
      * Función que recupera el password del usuario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
      *
      * @param $id
      * @return $currentPass
@@ -177,9 +221,10 @@ class UserController extends Controller
      * Función que renderiza nuestra vista de los datos de un usuario
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
+     * @param $id
      * @return Response
      */
-
     public function viewAction($id) {
         $repository = $this->getDoctrine()->getRepository('UserBundle:User');
 
@@ -198,10 +243,10 @@ class UserController extends Controller
      * Función que elimina a un usuario
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
      * @param Request $request, $id
-     * @return void
+     * @return void | RedirectResponse
      */
-
     public function deleteAction(Request $request, $id) {
         $em = $this->getDoctrine()->getManager();
         $user = $em->getRepository('UserBundle:User')->find($id);
@@ -229,6 +274,16 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Función que elimina a un usuario tipo user y no a uno de tipo admin
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $role
+     * @param $em
+     * @param $user
+     * @return array
+     */
     private function deleteUser($role, $em, $user) {
         if ($role == 'ROLE_USER') {
             $em->remove($user);
@@ -247,6 +302,16 @@ class UserController extends Controller
         return array('removed'=> $removed,'alert'=>$alert);
     }
 
+    /**
+     * Función que crea un formulario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $id
+     * @param $method
+     * @param $route
+     * @return FormBuilder
+     */
     private function createCustomForm($id, $method, $route) {
         return $this->createFormBuilder()
             ->setAction($this->generateUrl($route, array('id' => $id)))

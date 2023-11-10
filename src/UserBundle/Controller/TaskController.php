@@ -45,6 +45,50 @@ class TaskController extends Controller
     }
 
     /**
+     * Función que procesa los datos que se han actualizado en la base de datos
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $id
+     * @param Request $request
+     * @return void
+     */
+    public function processAction($id, Request $request) {
+        $em = $this->getDoctrine()->getManager();
+        $task = $em->getRepository('UserBundle:Task')->find($id);
+
+        if (!$task) {
+            throw $this->createNotFoundException('Task not found');
+        }
+
+        $form = $this->createCustomForm($task->getId(), 'PUT', 'task_process');
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($task->getStatus() == 0) {
+                $task->setStatus(1);
+                $em->flush();
+
+                if ($request->isXmlHttpRequest()) {
+                    return new Response(
+                        json_encode(array('processed' => 1)),
+                        200,
+                        array('Content-type' => 'application/json')
+                    );
+                }
+            } else {
+                if ($request->isXmlHttpRequest()) {
+                    return new Response(
+                        json_encode(array('processed' => 0)),
+                        200,
+                        array('Content-type' => 'application/json')
+                    );
+                }
+            }
+        }
+    }
+
+    /**
      * Función que renderiza al formulario para crear una nueva tarea
      *
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
@@ -81,7 +125,7 @@ class TaskController extends Controller
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
      * 
      * @param Request $request
-     * @return Response
+     * @return RedirectResponse
      */
     public function createAction(Request $request) {
         $task = new Task();
@@ -194,6 +238,14 @@ class TaskController extends Controller
         return $this->render('UserBundle:Task:edit.html.twig', array('task' => $task, 'form' => $form->createView()));
     }
     
+    /**
+     * Función que elimina una tarea
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     * 
+     * @param Request $request, $id
+     * @return RedirectResponse
+     */
     public function deleteAction(Request $request, $id) {
         $em = $this->getDoctrine()->getManager();
         $task = $em->getRepository('UserBundle:Task')->find($id);
@@ -214,7 +266,7 @@ class TaskController extends Controller
     }
 
     /**
-     * Función que crea un formulario para eliminar la tarea
+     * Función que crea un formulario
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
      *
