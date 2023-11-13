@@ -3,15 +3,28 @@
 namespace UserBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use UserBundle\Entity\User;
 use UserBundle\Form\UserType;
 
 class UserController extends Controller
 {
+    protected $container;
+    private $em;
+    private $userService;
+
+    public function setContainer(ContainerInterface $container = null) {
+
+        parent::setContainer($container);
+
+        $this->em                       = $this->getDoctrine()->getManager();
+        $this->userService              = $this->get('user_service');
+    }
 
     /**
      * Función que renderiza a la home page
@@ -33,9 +46,7 @@ class UserController extends Controller
      */
     public function indexAction()
     {
-        $em = $this->getDoctrine()->getManager();
-
-        $users = $em->getRepository('UserBundle:User')->findAll();
+        $users = $this->userService->getUsers();
 
         $deleteFormAjax = $this->createCustomForm(':USER_ID', 'DELETE', 'user_delete');
 
@@ -96,11 +107,7 @@ class UserController extends Controller
                 $encoder = $this->container->get('security.password_encoder');
                 $encoded = $encoder->encodePassword($user, $password);
     
-                $user->setPassword($encoded);
-    
-                $em = $this->getDoctrine()->getManager();
-                $em->persist($user);
-                $em->flush();
+                $this->userService->update($user, $encoded);
     
                 return $this->redirectToRoute('user_index');
             }else {
@@ -121,8 +128,7 @@ class UserController extends Controller
      * @return Response
      */
     public function editAction($id) {
-        $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('UserBundle:User')->find($id);
+        $user = $this->em->getRepository('UserBundle:User')->find($id);
 
         if (!$user) {
             throw $this->createNotFoundException('User not found');
@@ -158,10 +164,7 @@ class UserController extends Controller
      * @return RedirectResponse | Response
      */
     public function updateAction($id, Request $request) {
-
-        $em = $this->getDoctrine()->getManager();
-
-        $user = $em->getRepository('UserBundle:User')->find($id);
+        $user = $this->em->getRepository('UserBundle:User')->find($id);
 
         if (!$user) {
             throw $this->createNotFoundException('User not found');
@@ -172,49 +175,27 @@ class UserController extends Controller
 
         if ($form->isSubmitted() && $form->isValid()) {
             $password =$form->get('password')->getData();
+
+            if ($form->get('role')->getData() == 'ROLE_ADMIN') {
+                $active = 1;
+            }
+
             if (!empty($password)) {
                 $encoder = $this->container->get('security.password_encoder');
                 $encoded = $encoder->encodePassword($user, $password);
-                $user->setPassword($encoded);
+
+                
             } else {
-                $recoverPass = $this->recoverPass($id);
-                $user->setPassword($recoverPass[0]['password']);
+                $recoverPass = $this->userService->getCurrentPass();
+                $encoded = $recoverPass[0]['password'];
             }
 
-            if ($form->get('role')->getData() == 'ROLE_ADMIN') {
-                $user->setIsActive(1);
-            }
-
-            $em->flush();
+            $this->userService->updateUser($user, $encoded, $active);
 
             return $this->redirectToRoute('user_edit', array('id' => $user->getId()));
         }
 
         return $this->render('UserBundle:User:edit.html.twig', array('user' => $user, 'form' => $form->createView()));
-    }
-
-    /**
-     * Función que recupera el password del usuario
-     * 
-     * @author Pablo López <pablo.lopez@eurotransportcar.com>
-     *
-     * @param $id
-     * @return $currentPass
-     */
-    private function recoverPass($id) {
-       
-        /** @var $em EntityManager */
-        $em = $this->getDoctrine()->getManager();
-
-        $query = $em->createQuery(
-            'SELECT u.password
-            FROM UserBundle:User u
-            WHERE u.id = :id'
-        )->setParameter('id', $id);
-
-        $currentPass = $query->getResult();
-
-        return $currentPass;
     }
 
     /**
@@ -226,7 +207,7 @@ class UserController extends Controller
      * @return Response
      */
     public function viewAction($id) {
-        $repository = $this->getDoctrine()->getRepository('UserBundle:User');
+        $repository = $this->em->getRepository('UserBundle:User');
 
         $user = $repository->find($id);
 
@@ -248,8 +229,7 @@ class UserController extends Controller
      * @return void | RedirectResponse
      */
     public function deleteAction(Request $request, $id) {
-        $em = $this->getDoctrine()->getManager();
-        $user = $em->getRepository('UserBundle:User')->find($id);
+        $user = $this->em->getRepository('UserBundle:User')->find($id);
 
         if (!$user) {
             throw $this->createNotFoundException('User not found');
@@ -261,45 +241,13 @@ class UserController extends Controller
 
         if ($form->isSubmitted() && $form->isValid()) {
             if ($request->isXmlHttpRequest()) {
-                $res = $this->deleteUser($user -> getRole(), $em, $user);
+                $result = $this->userService->remove($user);
 
-                return new Response(
-                    json_encode(array('removed' => $res['removed'])), 200, array('Content-Type' => 'application/json')
-                );
+                return new JsonResponse($result, $result['statusCode'], array('Content-Type' => 'application/json'));
             }
-
-            $res = $this->deleteUser($user -> getRole(), $em, $user);
 
             return $this->redirectToRoute('user_index');
         }
-    }
-
-    /**
-     * Función que elimina a un usuario tipo user y no a uno de tipo admin
-     * 
-     * @author Pablo López <pablo.lopez@eurotransportcar.com>
-     *
-     * @param $role
-     * @param $em
-     * @param $user
-     * @return array
-     */
-    private function deleteUser($role, $em, $user) {
-        if ($role == 'ROLE_USER') {
-            $em->remove($user);
-            $em->flush();
-
-            $removed = 1;
-            $alert = 'mensaje';
-        }
-
-        elseif ($role == 'ROLE_ADMIN') {
-            echo "The user could not be deleted.";
-            $removed = 0;
-            $alert = 'error';
-        }
-
-        return array('removed'=> $removed,'alert'=>$alert);
     }
 
     /**

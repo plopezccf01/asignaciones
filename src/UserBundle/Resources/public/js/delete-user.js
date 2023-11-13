@@ -13,12 +13,17 @@ $(document).ready(function() {
             if (res == true) {
                 $('#delete-progress').removeClass('hidden');
                 $.post(url, data, function (result) {
+
                     $('#delete-progress').addClass('hidden');
-                    if (result.removed == 1) {
+                    if (result.status == 1) {
                         row.fadeOut();
                     }
-                }).fail(function (){
-                    alert('ERROR');
+                }).fail(function (result){
+
+                    $('#delete-progress').addClass('hidden');
+                    let resultResponse = result.responseJSON;
+
+                    alert(resultResponse.message);
                     row.show();
                 });
             }
