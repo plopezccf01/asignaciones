@@ -2,13 +2,16 @@
 
 namespace UserBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Task
  *
  * @ORM\Table(name="tasks")
  * @ORM\Entity(repositoryClass="UserBundle\Repository\TaskRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class Task
 {
@@ -31,6 +34,7 @@ class Task
      * @var string
      *
      * @ORM\Column(name="title", type="string", length=150)
+     * @Assert\NotBlank()
      */
     private $title;
 
@@ -38,6 +42,7 @@ class Task
      * @var string
      *
      * @ORM\Column(name="description", type="text")
+     * @Assert\NotBlank()
      */
     private $description;
 
@@ -192,5 +197,43 @@ class Task
     {
         return $this->updatedAt;
     }
-}
 
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAtValue() {
+        $this->createdAt = new \DateTime();
+    }
+
+    /**
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedAtValue() {
+        $this->updatedAt = new \DateTime();
+    }
+
+    /**
+     * Set user
+     *
+     * @param \UserBundle\Entity\User $user
+     *
+     * @return Task
+     */
+    public function setUser(\UserBundle\Entity\User $user = null)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Get user
+     *
+     * @return \UserBundle\Entity\User
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+}

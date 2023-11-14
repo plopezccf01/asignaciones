@@ -12,6 +12,14 @@ use PDO;
  */
 class TaskRepository extends \Doctrine\ORM\EntityRepository
 {
+
+    /**
+     * Función que te devuelve todas las tareas
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @return $tasks
+     */
     public function getTasks() {
         $em = $this->getEntityManager(); // Solo para repositorio
         $dql = "SELECT t FROM UserBundle:Task t ORDER BY t.id DESC";
@@ -19,9 +27,51 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
         return $tasks;
     }
 
-    public function updateStatus($task, $status) {
-        $em = $this->getEntityManager();
-        $task->setStatus($status);
-        $em->flush();
+    /**
+     * Función que te actualiza el estado de la tarea
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $task
+     * @param $status
+     * @param $needPersist
+     * @return boolean
+     */
+    public function updateStatus($task, $status = null, $needPersist = false) {
+        
+        try {
+            $em = $this->getEntityManager();
+            $task->setStatus($status);
+
+            if ($needPersist) {
+                $em->persist($task);
+            }
+
+            $em->flush();
+        } catch (\Throwable $th) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Función que te elimina una tarea
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $task
+     * @return boolean
+     */
+    public function removeTask($task) {
+        try {
+            $em = $this->getEntityManager();
+            $em->remove($task);
+            $em->flush();
+        } catch (\Throwable $th) {
+            return false;
+        }
+
+        return true;
     }
 }

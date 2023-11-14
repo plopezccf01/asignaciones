@@ -10,3 +10,7 @@ services:
     user_service:
         class: UserBundle\Services\UserService
         arguments: ["@doctrine.orm.default_entity_manager"]
+
+    task_service:
+        class: UserBundle\Services\TaskService
+        arguments: ["@doctrine.orm.default_entity_manager"]

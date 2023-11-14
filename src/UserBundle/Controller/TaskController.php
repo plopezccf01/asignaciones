@@ -3,6 +3,8 @@
 namespace UserBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use UserBundle\Entity\Task;
@@ -10,6 +12,17 @@ use UserBundle\Form\TaskType;
 
 class TaskController extends Controller
 {
+    protected $container;
+    private $em;
+    private $taskService;
+
+    public function setContainer(ContainerInterface $container = null) {
+
+        parent::setContainer($container);
+
+        $this->em                       = $this->getDoctrine()->getManager();
+        $this->taskService              = $this->get('task_service');
+    }
     /**
      * Función que renderiza la vista de las tareas
      * 
@@ -18,8 +31,7 @@ class TaskController extends Controller
      * @return Response
      */
     public function indexAction() {
-        $em = $this->getDoctrine()->getManager();
-        $tasks = $em->getRepository('UserBundle:Task')->findBy(array(), array('id' => 'DESC'));
+        $tasks = $this->em->getRepository('UserBundle:Task')->findBy(array(), array('id' => 'DESC'));
 
         return $this->render('UserBundle:Task:index.html.twig', array('tasks' => $tasks));
     }
@@ -34,9 +46,8 @@ class TaskController extends Controller
     public function customAction(Request $request) {
         $idUser = $this->get('security.token_storage')->getToken()->getUser()->getId();
 
-        $em = $this->getDoctrine()->getManager();
         $dql = "SELECT t FROM UserBundle:Task t JOIN t.user u WHERE u.id = :idUser ORDER BY t.id DESC";
-        $tasks = $em->createQuery($dql)->setParameter('idUser', $idUser)->getResult();
+        $tasks = $this->em->createQuery($dql)->setParameter('idUser', $idUser)->getResult();
 
         $updateForm = $this->createCustomForm(':TASK_ID', 'PUT', 'task_process');
 
@@ -53,8 +64,7 @@ class TaskController extends Controller
      * @return void
      */
     public function processAction($id, Request $request) {
-        $em = $this->getDoctrine()->getManager();
-        $task = $em->getRepository('UserBundle:Task')->find($id);
+        $task = $this->em->getRepository('UserBundle:Task')->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('Task not found');
@@ -64,25 +74,24 @@ class TaskController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if ($task->getStatus() == 0) {
-                $em->getRepository('UserBundle:Task')->updateStatus($task, 1);
+            // if ($task->getStatus() == 0) {
+            //     $processed = 1;
+            // } else {
+            //     $processed = 0;
+            // }
 
-                if ($request->isXmlHttpRequest()) {
-                    return new Response(
-                        json_encode(array('processed' => 1)),
-                        200,
-                        array('Content-type' => 'application/json')
-                    );
-                }
-            } else {
-                if ($request->isXmlHttpRequest()) {
-                    return new Response(
-                        json_encode(array('processed' => 0)),
-                        200,
-                        array('Content-type' => 'application/json')
-                    );
-                }
+            $processed = ($task->getStatus() == 0) ? 1 : 0 ;
+
+            $result = $this->taskService->updateStatus($task, 1);
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse(
+                    $result,
+                    $result['statusCode'],
+                    array('Content-type' => 'application/json')
+                );
             }
+            
         }
     }
 
@@ -133,13 +142,9 @@ class TaskController extends Controller
         if(!$form->isSubmitted() || !$form->isValid()){
             return $this->render('UserBundle:Task:add.html.twig', array('form' => $form->createView()));
         }
-
-        $task->setStatus(0);
-        $em = $this->getDoctrine()->getManager();
         
         try {
-            $em->persist($task);
-            $em->flush();
+            $this->taskService->updateStatus($task, 0, true);
         } catch (\Throwable $th) {
             return $this->redirectToRoute('task_index');
         }
@@ -156,7 +161,7 @@ class TaskController extends Controller
      * @return Response
      */
     public function viewAction($id) {
-        $task = $this->getDoctrine()->getRepository('UserBundle:Task')->find($id);
+        $task = $this->em->getRepository('UserBundle:Task')->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('The task does not exist.');
@@ -178,8 +183,7 @@ class TaskController extends Controller
      * @return Response
      */
     public function editAction($id) {
-        $em = $this->getDoctrine()->getManager();
-        $task = $em->getRepository('UserBundle:Task')->find($id);
+        $task = $this->em->getRepository('UserBundle:Task')->find($id);
 
         try {
             $form = $this->createEditForm($task);
@@ -216,8 +220,7 @@ class TaskController extends Controller
      * @return RedirectResponse | Response
      */
     public function updateAction($id, Request $request) {
-        $em = $this->getDoctrine()->getManager();
-        $task = $em->getRepository('UserBundle:Task')->find($id);
+        $task = $this->em->getRepository('UserBundle:Task')->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('The task does not found.');
@@ -227,8 +230,7 @@ class TaskController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $task->setStatus(0);
-            $em->flush();
+            $this->taskService->updateStatus($task, 0);
 
             return $this->redirectToRoute('task_edit', array('id' => $task->getId()));
         }
@@ -245,8 +247,7 @@ class TaskController extends Controller
      * @return RedirectResponse
      */
     public function deleteAction(Request $request, $id) {
-        $em = $this->getDoctrine()->getManager();
-        $task = $em->getRepository('UserBundle:Task')->find($id);
+        $task = $this->em->getRepository('UserBundle:Task')->find($id);
 
         if (!$task) {
             throw $this->createNotFoundException('The task does not found.');
@@ -256,10 +257,16 @@ class TaskController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $em->remove($task);
-            $em->flush();
+            // $this->em->remove($task);
+            // $this->em->flush();
+            $result = $this->taskService->removeTask($task);
 
-            return $this->redirectToRoute('task_index');
+            if ($result["status"]) {
+                return $this->redirectToRoute('task_index');
+            } else {
+                return new JsonResponse($result["message"]);
+            }
+
         }
     }
 
@@ -279,5 +286,4 @@ class TaskController extends Controller
             ->setMethod($method) // Define el método que va a procesar el formulario
             ->getForm(); //Procesa el formulario
     }
-
 }
