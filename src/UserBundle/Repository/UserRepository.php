@@ -10,4 +10,68 @@ namespace UserBundle\Repository;
  */
 class UserRepository extends \Doctrine\ORM\EntityRepository
 {
+
+    /**
+     * Función que recupera el password del usuario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $id
+     * @return $currentPass
+     */
+    public function getCurrentPass($id) {
+        $em = $this->getEntityManager();
+        $query = $em->createQuery(
+            'SELECT u.password
+            FROM UserBundle:User u
+            WHERE u.id = :id'
+        )->setParameter('id', $id);
+
+        $currentPass = $query->getResult();
+
+        return $currentPass;
+    }
+
+    /**
+     * Función que actualiza la contraseña de un usuario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $user
+     * @param $encodedPassword
+     * @param $active
+     * @return boolean
+     */
+    public function update($user, $encodedPassword, $active = null) {
+        try {
+            $em = $this->getEntityManager();
+            $user->setIsActive($active);
+            $user->setPassword($encodedPassword);
+            $em->flush();
+        } catch (\Throwable $th) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Función que elimina un usuario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
+     *
+     * @param $user
+     * @return boolean
+     */
+    public function remove($user) {
+        try {
+            $em = $this->getEntityManager();
+            $em->remove($user);
+            $em->flush();
+        } catch (\Throwable $th) {
+            return false;
+        }
+
+        return true;
+    }
 }

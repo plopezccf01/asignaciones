@@ -22,7 +22,12 @@ class UserService
     public function getUsers() {
         $users = $this->userRepository->findAll();
 
-        return $users;
+        return array(
+            "status"        => true,
+            "statusCode"    => 200,
+            "message"       => '',
+            "data"          => $users
+        );
     }
 
     /**
@@ -34,19 +39,20 @@ class UserService
      * @return $currentPass
      */
     public function getCurrentPass($id) {
-        $query = $this->em->createQuery(
-            'SELECT u.password
-            FROM UserBundle:User u
-            WHERE u.id = :id'
-        )->setParameter('id', $id);
+        $result = $this->userRepository->getCurrentPass($id);
 
-        $currentPass = $query->getResult();
-
-        return $currentPass;
+        return array(
+            "status"        => true,
+            "statusCode"    => 200,
+            "message"       => '',
+            "data"          => $result
+        );
     }
 
     /**
      * Función que actualiza la contraseña de un usuario
+     * 
+     * @author Pablo López <pablo.lopez@eurotransportcar.com>
      *
      * @param $user
      * @param $encodedPassword
@@ -54,9 +60,22 @@ class UserService
      * @return void
      */
     public function update($user, $encodedPassword, $active = null) {
-        $user->setIsActive($active);
-        $user->setPassword($encodedPassword);
-        $this->em->flush();
+        $result = $this->userRepository->update($user, $encodedPassword, $active);
+        if (!$result) {
+            return array(
+                'status'        => false, 
+                'statusCode'    => 400,
+                'message'       => 'KO',
+                'data'          => null
+            );
+        }
+
+        return array(
+            'status'        => true, 
+            'statusCode'    => 200,
+            'message'       => 'OK',
+            'data'          => null
+        );
     }
 
     /**
@@ -68,7 +87,6 @@ class UserService
      * @return array
      */
     public function remove($user) {
-
         if ($user->getRole() == 'ROLE_ADMIN') {
             return array(
                 "status"        => false,
@@ -77,23 +95,22 @@ class UserService
                 "data"          => null
             );
         }
+
+        $result = $this->userRepository->remove($user);
         
-        try {
-            $this->em->remove($user);
-            $this->em->flush();
-
-            $status = true;
-            $alert = 'The user has been removed.';
-
-        } catch (\Throwable $th) {
-            $status = false;
-            $alert = 'The user could not be deleted.';
+        if (!$result) {
+            return array(
+                "status"        => false,
+                "statusCode"    => 400,
+                "message"       => 'The user could not be deleted.',
+                "data"          => null
+            );
         }
         
         return array(
-            "status"        => $status,
+            "status"        => true,
             "statusCode"    => 200,
-            "message"       => $alert,
+            "message"       => "The user has been removed",
             "data"          => null
         );
     }

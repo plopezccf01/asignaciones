@@ -46,11 +46,11 @@ class UserController extends Controller
      */
     public function indexAction()
     {
-        $users = $this->userService->getUsers();
+        $result = $this->userService->getUsers();
 
         $deleteFormAjax = $this->createCustomForm(':USER_ID', 'DELETE', 'user_delete');
 
-        return $this->render('UserBundle:User:index.html.twig', array('users' => $users, 'delete_form_ajax' => $deleteFormAjax->createView()));
+        return $this->render('UserBundle:User:index.html.twig', array('users' => $result["data"], 'delete_form_ajax' => $deleteFormAjax->createView()));
     }
 
     /**
@@ -186,11 +186,11 @@ class UserController extends Controller
 
                 
             } else {
-                $recoverPass = $this->userService->getCurrentPass();
-                $encoded = $recoverPass[0]['password'];
+                $result = $this->userService->getCurrentPass();
+                $encoded = $result["data"][0]['password'];
             }
 
-            $this->userService->updateUser($user, $encoded, $active);
+            $this->userService->update($user, $encoded, $active);
 
             return $this->redirectToRoute('user_edit', array('id' => $user->getId()));
         }
