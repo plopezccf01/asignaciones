@@ -21,9 +21,30 @@ class TaskRepository extends \Doctrine\ORM\EntityRepository
      * @return $tasks
      */
     public function getTasks() {
-        $em = $this->getEntityManager(); // Solo para repositorio
-        $dql = "SELECT t FROM UserBundle:Task t ORDER BY t.id DESC";
-        $tasks = $em->createQuery($dql)->getResult();
+        
+        $sql = 
+            'SELECT
+                t.id                                        "id",
+                t.title                                     "title",
+                DATE_FORMAT(t.created_at, "%d/%m/%Y %H:%i") "date",
+                CONCAT(u.first_name, " ", u.last_name)      "user",
+                t.status                                    "status"
+            FROM
+                tasks t
+            LEFT JOIN 
+                users u ON u.id = t.user_id
+            ORDER BY
+                t.id DESC'
+        ;
+
+        try {
+            $query = $this->getEntityManager()->getConnection()->prepare($sql);
+            $query->execute();
+            $tasks = $query->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+
         return $tasks;
     }
 

@@ -22,14 +22,14 @@
                         {% for task in tasks %}
                             <tr data-id="{{ task.id }}">
                                 <td>
-                                    <a href="{{ path('task_view', {id: task.id}) }}">{{ task.title }}</a>
+                                    <a href="{{ path('task_view', {id: task["id"]}) }}">{{ task["title"] }}</a>
                                 </td>
-                                <td>{{ task.createdAt | date('d-m-Y H:i') }}</td>
-                                <td>{{ task.user.fullName}}</td>
+                                <td>{{ task["date"] | date('d-m-Y H:i') }}</td>
+                                <td>{{ task["user"]}}</td>
                                 <td>
-                                    {% if task.status == 0 %}
-                                        <span class="glyphicon glyphicon-time text-danger" title="Waiting" id="glyphicon-{{ task.id }}"></span>
-                                    {% elseif task.status == 1 %}
+                                    {% if task["status"] == 0 %}
+                                        <span class="glyphicon glyphicon-time text-danger" title="Waiting" id="glyphicon-{{ task["id"] }}"></span>
+                                    {% elseif task["status"] == 1 %}
                                         <span class="glyphicon glyphicon-ok text-success" title="Finish"></span>
                                     {% endif %}
                                 </td>

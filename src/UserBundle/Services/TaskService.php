@@ -32,7 +32,7 @@ class TaskService {
      *
      * @param $task
      * @param $status
-     * @param $needPersist
+     * @param boolean $needPersist
      * @return array
      */
     public function updateStatus($task, $status = null, $needPersist = false) {

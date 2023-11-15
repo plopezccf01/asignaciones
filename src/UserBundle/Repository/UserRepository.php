@@ -20,14 +20,27 @@ class UserRepository extends \Doctrine\ORM\EntityRepository
      * @return $currentPass
      */
     public function getCurrentPass($id) {
-        $em = $this->getEntityManager();
-        $query = $em->createQuery(
-            'SELECT u.password
-            FROM UserBundle:User u
-            WHERE u.id = :id'
-        )->setParameter('id', $id);
+        
+        $parameters = array();
+        
+        $query = 
+            'SELECT 
+                u.password
+            FROM 
+                users u
+            WHERE 
+                u.id = :id'
+        ;
 
-        $currentPass = $query->getResult();
+        $parameters['id'] = $id;
+
+        try {
+            $query = $this->getEntityManager()->getConnection()->prepare($query);
+            $query->execute($parameters);
+            $currentPass = $query->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
 
         return $currentPass;
     }
@@ -40,13 +53,23 @@ class UserRepository extends \Doctrine\ORM\EntityRepository
      * @param $user
      * @param $encodedPassword
      * @param $active
+     * @param boolean $needPersist
      * @return boolean
      */
-    public function update($user, $encodedPassword, $active = null) {
+    public function update($user, $encodedPassword, $active = null, $needPersist = false) {
         try {
             $em = $this->getEntityManager();
-            $user->setIsActive($active);
-            $user->setPassword($encodedPassword);
+
+            if ($active !== null) {
+                $user->setIsActive($active);
+            }
+
+            $user->setPassword($encodedPassword); 
+
+            if ($needPersist) {
+                $em->persist($user);
+            }
+
             $em->flush();
         } catch (\Throwable $th) {
             return false;

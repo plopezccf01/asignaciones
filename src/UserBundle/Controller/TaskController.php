@@ -31,7 +31,7 @@ class TaskController extends Controller
      * @return Response
      */
     public function indexAction() {
-        $tasks = $this->em->getRepository('UserBundle:Task')->findBy(array(), array('id' => 'DESC'));
+        $tasks = $this->em->getRepository('UserBundle:Task')->getTasks();
 
         return $this->render('UserBundle:Task:index.html.twig', array('tasks' => $tasks));
     }

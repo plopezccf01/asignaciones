@@ -107,7 +107,7 @@ class UserController extends Controller
                 $encoder = $this->container->get('security.password_encoder');
                 $encoded = $encoder->encodePassword($user, $password);
     
-                $this->userService->update($user, $encoded);
+                $this->userService->update($user, $encoded, null, true);
     
                 return $this->redirectToRoute('user_index');
             }else {
@@ -145,7 +145,7 @@ class UserController extends Controller
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
      *
      * @param User $entity
-     * @return $form
+     * @return Form $form
      */
     private function createEditForm(User $entity) {
         $form = $this->createForm(new UserType(), $entity, 

@@ -17,7 +17,7 @@ class UserService
      * 
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
      *
-     * @return $users
+     * @return array
      */
     public function getUsers() {
         $users = $this->userRepository->findAll();
@@ -36,7 +36,7 @@ class UserService
      * @author Pablo López <pablo.lopez@eurotransportcar.com>
      *
      * @param $id
-     * @return $currentPass
+     * @return array
      */
     public function getCurrentPass($id) {
         $result = $this->userRepository->getCurrentPass($id);
@@ -57,10 +57,11 @@ class UserService
      * @param $user
      * @param $encodedPassword
      * @param $active
-     * @return void
+     * @param boolean $needPersist
+     * @return array
      */
-    public function update($user, $encodedPassword, $active = null) {
-        $result = $this->userRepository->update($user, $encodedPassword, $active);
+    public function update($user, $encodedPassword, $active = null, $needPersist = false) {
+        $result = $this->userRepository->update($user, $encodedPassword, $active, $needPersist);
         if (!$result) {
             return array(
                 'status'        => false, 
