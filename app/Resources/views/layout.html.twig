@@ -14,9 +14,7 @@
     </head>
     <body>
         {% block body %}
-            {# {% if is_granted('IS_AUTHENTICATED_FULLY') %} #}
-                {{ include('menu.html.twig') }}
-            {# {% endif %} #}
+            {{ include('menu.html.twig') }}
         {% endblock %} 
         {% block javascripts %}
             <script 
@@ -31,7 +29,7 @@
                 integrity="sha512-8NOmlkzoskIBni4iy5onHC57Mndt17mZgWkYJvxe5jwBJu3spYIRSjTkYJ9OLNS9Min+bsSqbDfGaoejWxyFiw==" 
                 crossorigin="anonymous" referrerpolicy="no-referrer">
             </script>
-            
+            <script type="text/javascript" src="{{ asset('public/js/validateFields.js') }}"></script>
         {% endblock %}
     </body>
 </html>
