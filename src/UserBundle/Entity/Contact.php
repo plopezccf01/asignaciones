@@ -26,7 +26,6 @@ class Contact
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=100)
-     * @Assert\NotBlank()
      */
     private $name;
 
@@ -34,7 +33,6 @@ class Contact
      * @var string
      *
      * @ORM\Column(name="surnames", type="string", length=255)
-     * @Assert\NotBlank()
      */
     private $surnames;
 
@@ -42,7 +40,6 @@ class Contact
      * @var string
      * 
      * @ORM\Column(name="email", type="string", length=255)
-     * @Assert\NotBlank()
      * @Assert\Email()
      */
     private $email;
@@ -58,7 +55,6 @@ class Contact
      * @var string
      *
      * @ORM\Column(name="affair", type="string", length=150)
-     * @Assert\NotBlank()
      */
     private $affair;
 
@@ -66,7 +62,6 @@ class Contact
      * @var string
      *
      * @ORM\Column(name="description", type="text")
-     * @Assert\NotBlank()
      */
     private $description;
 
