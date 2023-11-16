@@ -1,0 +1,3 @@
+contact_index:
+    path:       /
+    defaults:   { _controller: UserBundle:Contact:index }
