@@ -14,3 +14,7 @@ services:
     task_service:
         class: UserBundle\Services\TaskService
         arguments: ["@doctrine.orm.default_entity_manager"]
+
+    contact_service:
+        class: UserBundle\Services\ContactService
+        arguments: ["@doctrine.orm.default_entity_manager"]

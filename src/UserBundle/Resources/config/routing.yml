@@ -9,7 +9,7 @@ task_task:
 contact_contact:
     resource: "@UserBundle/Resources/config/routes/contact.yml"
     prefix: /contact
-
+    
 # Autentication
 
 user_homepage:

@@ -65,6 +65,14 @@ class Contact
      */
     private $description;
 
+    public function __construct($name, $surnames, $email, $affair, $description, $phoneNumber = null) {
+        $this->name         = $name;
+        $this->surnames     = $surnames;
+        $this->email        = $email;
+        $this->affair       = $affair;
+        $this->description  = $description;
+        $this->phoneNumber  = $phoneNumber;
+    }
 
     /**
      * Get id
