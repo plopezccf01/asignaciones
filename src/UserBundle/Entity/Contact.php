@@ -65,6 +65,13 @@ class Contact
      */
     private $description;
 
+    /**
+     * @var boolean
+     * 
+     * @ORM\Column(name="send_email", type="boolean", options={"default": 0})
+     */
+    private $sendEmail;
+
     public function __construct($name, $surnames, $email, $affair, $description, $phoneNumber = null) {
         $this->name         = $name;
         $this->surnames     = $surnames;
@@ -226,5 +233,29 @@ class Contact
     public function getEmail()
     {
         return $this->email;
+    }
+
+    /**
+     * Set sendEmail
+     *
+     * @param boolean $sendEmail
+     *
+     * @return Contact
+     */
+    public function setSendEmail($sendEmail)
+    {
+        $this->sendEmail = $sendEmail;
+
+        return $this;
+    }
+
+    /**
+     * Get sendEmail
+     *
+     * @return boolean
+     */
+    public function getSendEmail()
+    {
+        return $this->sendEmail;
     }
 }

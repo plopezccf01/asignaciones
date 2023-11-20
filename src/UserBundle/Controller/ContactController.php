@@ -18,8 +18,8 @@ class ContactController extends Controller
 
         parent::setContainer($container);
 
-        $this->em                       = $this->getDoctrine()->getManager();
-        $this->contactService              = $this->get('contact_service');
+        $this->em                           = $this->getDoctrine()->getManager();
+        $this->contactService               = $this->get('contact_service');
     }
 
     /**

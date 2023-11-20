@@ -18,3 +18,7 @@ services:
     contact_service:
         class: UserBundle\Services\ContactService
         arguments: ["@doctrine.orm.default_entity_manager"]
+
+    email_service:
+        class: UserBundle\Services\EmailService
+        arguments: ["@doctrine.orm.default_entity_manager", '@mailer', '@service_container']
