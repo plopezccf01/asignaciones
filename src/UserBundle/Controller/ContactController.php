@@ -4,6 +4,8 @@ namespace UserBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class ContactController extends Controller
@@ -17,8 +19,9 @@ class ContactController extends Controller
         parent::setContainer($container);
 
         $this->em                       = $this->getDoctrine()->getManager();
-        // $this->contactService              = $this->get('contact_service');
+        $this->contactService              = $this->get('contact_service');
     }
+
     /**
      * Función que renderiza la vista de las tareas
      * 
@@ -29,5 +32,15 @@ class ContactController extends Controller
     public function indexAction() {
 
         return $this->render('UserBundle:Contact:index.html.twig');
+    }
+
+    public function addContactDataAction(Request $request) {
+        $result = $this->contactService->validateContactData($request->request->all());
+
+        if (!$result['status']) {
+            return new JsonResponse($result);
+        }
+
+        return new JsonResponse($this->contactService->newContact($request->request->all()));
     }
 }

@@ -19,28 +19,19 @@ function validateForm() {
     checkEmail = validateEmail( $("#email").val() );
 
     if(checkEmail) {
-        showAlert($("#email"), 'Correcto', 'green');
+        showAlert($("#email"), 'Correct', 'green');
     } else {
-        showAlert($("#email"), 'Compruebe su email', 'red');
+        showAlert($("#email"), 'Check your email', 'red');
     }
 
-    // Se comprueba que los campos numéricos solo contengan números
-    if ($('#selector-banderas').val() == -1) {
-        showAlert($("#selector-banderas"), 'Seleccione un prefijo', 'red');
-    } else{
-        showAlert($("#selector-banderas"), 'Correcto', 'green');
-    }
-
-    if (checkPhone($('#phone').val())) {
-        checkNumbers = checkNumericFields($('#selector-banderas').val(), $('#phone').val());
+    checkNumbers = checkPhone($('#phone').val());
         
-        if(checkNumbers) {
-            showAlert($("#phone"), 'Correcto', 'green');
-        } else {
-            showAlert($("#phone"), 'Compruebe su número con el prefijo', 'red');
-        }
-    } else{
-        showAlert($("#phone"), 'Introduzca un numero correcto', 'red');
+    if(checkNumbers) {
+        showAlert($("#phone2"), 'Correct', 'green');
+        showAlert($("#phone"), 'Correct', 'green');
+    } else {
+        showAlert($("#phone2"), 'Check your phone number', 'red');
+        showAlert($("#phone"), 'Check your phone number', 'red');
     }
     
 
@@ -59,16 +50,16 @@ function checkRequiredFields() {
     $(".requiredField").each(function() {
         if( $(this).val().trim() == "" ) {
             if( $(this).is("select") ) {
-                showAlert($(this), 'Debe seleccionar una opción', 'red');
+                showAlert($(this), 'You must select an option', 'red');
             } else {
-                showAlert($(this), 'Este campo no puede estar vacío', 'red');
+                showAlert($(this), 'This field can not be blank', 'red');
             }
             auxResult = false;
         } else {
             if( $(this).is("select") ) {
-                showAlert($(this), 'Correcto', 'green');
+                showAlert($(this), 'Correct', 'green');
             } else {
-                showAlert($(this), 'Correcto', 'green');
+                showAlert($(this), 'Correct', 'green');
             }
         }
     });
@@ -76,22 +67,11 @@ function checkRequiredFields() {
     return auxResult;
 } // checkRequiredFields
 
-// Comprobar campos numéricos
-function checkNumericFields(prefijo, numero) {
-    let auxResult = true;
-
-    // Campos numéricos de la parte de facturación
-    let regex = /^\+\d{1,4}\d{1,14}$/;
-    auxResult = regex.test(prefijo + numero);
-
-    return auxResult;
-}
-
 function checkPhone(numero) {
     let auxResult = true;
 
     // Campos numéricos de la parte de facturación
-    let regex = /^\d{1,14}$/;
+    let regex = /^[0-9-()+]{3,20}/;
     auxResult = regex.test(numero);
 
     return auxResult;
@@ -105,5 +85,31 @@ function validateEmail(email) {
 
 $('.btn-success').click(function(){
 
-    validateForm();
+    if (validateForm()) {
+        sendForm();
+    }
 });
+
+const input = document.querySelector("#phone");
+const iti   = window.intlTelInput(input, {
+    utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
+    preferredCountries: ["es"],
+    separateDialCode: true
+});
+
+$('#phone').change(function(){
+    $('#phone2').val($(this).val());
+});
+
+function getData() {
+    let data = {
+        'firstName'     :      $('#firstName').val(),
+        'lastName'      :      $('#lastName').val(),
+        'email'         :      $('#email').val(),
+        'phone'         :      iti.getNumber(),
+        'affair'        :      $('#affair').val(),
+        'description'   :      $('#description').val()
+    };
+    
+    return data;
+}
