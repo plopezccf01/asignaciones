@@ -33,6 +33,6 @@ monolog:
 swiftmailer:
     transport: gmail
     username:  pablo.lopez@eurotransportcar.com   
-    password:  palogokosaas09_
+    password:  '%email_password%'
     spool:
         type: memory
